@@ -76,8 +76,6 @@ public class IdController {
     @GetMapping("string/test")
     public String stringTest(
             @ApiParam(value = "執行緒數量", example = "8")
-            @RequestParam(required = false, defaultValue = "8") final int scope
-            ,@ApiParam(value = "執行緒數量", example = "8")
             @RequestParam(required = false, defaultValue = "8") final int thread
             , @ApiParam(value = "每個執行緒產生ID數量", example = "1000")
             @RequestParam(required = false, defaultValue = "1000") final int count
