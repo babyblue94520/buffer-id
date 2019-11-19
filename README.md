@@ -49,9 +49,11 @@ __小技巧__
 每秒可產生約 1億~2億5 __ID__
 
 純數字
+
 ![](https://i.imgur.com/xW7uAKY.png)
 
 前綴
+
 ![](https://i.imgur.com/4sisz0X.png)
 
 __優點__
