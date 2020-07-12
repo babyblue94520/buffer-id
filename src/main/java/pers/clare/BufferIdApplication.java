@@ -21,23 +21,4 @@ public class BufferIdApplication {
     public static void main(String[] args) {
         SpringApplication.run(BufferIdApplication.class, args);
     }
-
-    @Autowired
-    @Bean
-    public IdManager idManager(DataSource ds){
-        return new MySQLIdManager(ds);
-    }
-
-//    @Autowired
-//    @Bean
-//    public IdManager idManager(RedisConnectionFactory connectionFactory){
-//        return new RedisIdManager(connectionFactory);
-//    }
-
-//    @Bean
-//    @ConditionalOnMissingBean(IdManager.class)
-//    public IdManager idManager(){
-//        return new LocalIdManager();
-//    }
-
 }

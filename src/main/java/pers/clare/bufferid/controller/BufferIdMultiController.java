@@ -5,11 +5,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import pers.clare.bufferid.manager.IdManager;
+import pers.clare.bufferid.config.BufferIdConfig;
 import pers.clare.bufferid.service.BufferIdService;
 
 import java.text.DecimalFormat;
@@ -18,12 +19,11 @@ import java.util.List;
 import java.util.concurrent.*;
 
 
-@Api(tags = {"Buffer ID產生測試"})
+@Api(tags = {"Multi Buffer ID產生測試"})
 @RestController
-@RequestMapping("buffer")
-public class BufferIdController {
-    @Autowired
-    private IdManager idManager;
+@RequestMapping("buffer/multi")
+public class BufferIdMultiController {
+    @Qualifier(BufferIdConfig.Multi)
     @Autowired
     private BufferIdService bufferIdService;
 
@@ -39,7 +39,7 @@ public class BufferIdController {
                        @RequestParam(required = false, defaultValue = "prefix") final String prefix
 
     ) {
-        idManager.save(group, prefix);
+        bufferIdService.save(group, prefix);
         return bufferIdService.next(buffer, group, prefix);
     }
 
@@ -56,7 +56,7 @@ public class BufferIdController {
             @RequestParam(required = false, defaultValue = "20") final int length
 
     ) {
-        idManager.save(group, prefix);
+        bufferIdService.save(group, prefix);
         return bufferIdService.next(buffer, group, prefix,length);
     }
 
@@ -107,7 +107,7 @@ public class BufferIdController {
             , Integer length
             , BufferFunction fun
     ) throws Exception {
-        idManager.save(group, prefix);
+        bufferIdService.save(group, prefix);
         ExecutorService executors = Executors.newFixedThreadPool(thread);
         long start = System.currentTimeMillis();
         List<Callable<Integer>> tasks = new ArrayList<>();
@@ -128,10 +128,4 @@ public class BufferIdController {
         executors.shutdown();
         return "\nID格式:" + fun.apply(buffer, group, prefix, length) + "\nID總數量；" + formatter.format(total) + "\n花費總時間：" + ms + " ms\n平均：" + formatter.format(total * 1000L / ms) + "/s";
     }
-}
-
-
-@FunctionalInterface
-interface BufferFunction<V> {
-    V apply(Integer buffer, String group, String prefix, Integer length);
 }
