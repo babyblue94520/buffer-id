@@ -36,21 +36,19 @@ public abstract class AbstractBufferIdService implements BufferIdService {
      */
     public Long next(int buffer, String group, String prefix) {
         BufferId bi = findBufferId(group, prefix);
-        return bi.count >= bi.max ? next(buffer, group, prefix, bi) : ++bi.count;
+        return bi.count < bi.max ? ++bi.count : next(buffer, group, prefix, bi);
     }
 
     /**
-     *
      * @param group
      * @param prefix
      * @return
      */
-    public int save(String group, String prefix){
+    public int save(String group, String prefix) {
         return this.idManager.save(group, prefix);
     }
 
     /**
-     *
      * @param group
      * @param prefix
      * @return
