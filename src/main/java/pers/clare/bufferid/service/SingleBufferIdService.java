@@ -25,34 +25,30 @@ public class SingleBufferIdService extends AbstractBufferIdService {
 
 
     /**
-     * 查詢或者建立 極速ID緩衝紀錄物件
+     * 取得數字ID
      *
+     * @param buffer 預設緩衝區大小
      * @param group  群組
      * @param prefix 前綴
-     * @return 極速ID緩衝紀錄物件
+     * @return long
      */
-    BufferId findBufferId(String group, String prefix) {
+    public Long next(int buffer, String group, String prefix) {
         ConcurrentMap<String, BufferId> map;
-        BufferId bi;
         if ((map = cache.get(group)) == null) {
             synchronized (groupLock.getLock(group)) {
                 if ((map = cache.get(group)) == null) {
                     cache.put(group, map = new ConcurrentHashMap<>());
-                    map.put(prefix, bi = new BufferId());
-                    return bi;
                 }
             }
         }
-        if ((bi = map.get(prefix)) == null) {
-            synchronized (prefixLock.getLock(prefix)) {
-                if ((bi = map.get(prefix)) == null) {
-                    map.put(prefix, bi = new BufferId());
-                }
+        synchronized (prefixLock.getLock(prefix)) {
+            BufferId bi;
+            if ((bi = map.get(prefix)) == null) {
+                map.put(prefix, bi = new BufferId());
             }
+            return bi.count < bi.max ? ++bi.count : next(buffer, group, prefix, bi);
         }
-        return bi;
     }
-
 
     /**
      * 移除極速ID緩衝紀錄物件

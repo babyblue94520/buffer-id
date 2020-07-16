@@ -27,19 +27,6 @@ public abstract class AbstractBufferIdService implements BufferIdService {
     }
 
     /**
-     * 取得數字ID
-     *
-     * @param buffer 預設緩衝區大小
-     * @param group  群組
-     * @param prefix 前綴
-     * @return long
-     */
-    public Long next(int buffer, String group, String prefix) {
-        BufferId bi = findBufferId(group, prefix);
-        return bi.count < bi.max ? ++bi.count : next(buffer, group, prefix, bi);
-    }
-
-    /**
      * @param group
      * @param prefix
      * @return
@@ -91,8 +78,6 @@ public abstract class AbstractBufferIdService implements BufferIdService {
         bi.count = bi.max - buffer + 1;
         return bi.count;
     }
-
-    abstract BufferId findBufferId(String group, String prefix);
 
     abstract BufferId removeBufferId(String group, String prefix);
 

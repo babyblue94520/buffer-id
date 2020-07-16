@@ -1,7 +1,6 @@
 package pers.clare.bufferid.service;
 
 import pers.clare.bufferid.manager.IdManager;
-import pers.clare.bufferid.util.IdUtil;
 import pers.clare.util.Asserts;
 
 import java.util.HashMap;
@@ -27,25 +26,20 @@ public class MultiBufferIdService extends AbstractBufferIdService{
      * @param prefix 前綴
      * @return 極速ID緩衝紀錄物件
      */
-    BufferId findBufferId(String group, String prefix) {
+    public Long next(int buffer, String group, String prefix) {
         Map<String, Map<String, BufferId>> fastMap = cache.get();
-        Map<String, BufferId> map;
-        BufferId bi;
         if (fastMap == null) {
             cache.set((fastMap = new HashMap<>()));
-            fastMap.put(group, map = new HashMap<>());
-            map.put(prefix, bi = new BufferId());
-            return bi;
         }
+        Map<String, BufferId> map;
         if ((map = fastMap.get(group)) == null) {
             fastMap.put(group, map = new HashMap<>());
-            map.put(prefix, bi = new BufferId());
-            return bi;
         }
+        BufferId bi;
         if ((bi = map.get(prefix)) == null) {
             map.put(prefix, bi = new BufferId());
         }
-        return bi;
+        return bi.count < bi.max ? ++bi.count : next(buffer, group, prefix, bi);
     }
 
     /**
