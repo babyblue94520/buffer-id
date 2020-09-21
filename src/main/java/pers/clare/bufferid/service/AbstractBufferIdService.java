@@ -79,6 +79,6 @@ public abstract class AbstractBufferIdService implements BufferIdService {
         return bi.count;
     }
 
-    abstract BufferId removeBufferId(String group, String prefix);
+    public abstract BufferId removeBufferId(String group, String prefix);
 
 }
