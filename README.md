@@ -46,7 +46,7 @@ __小技巧__
 
 所有執行緒共用一個 __ID buffer__，效能依賴機器硬體
 
-![](https://babyblue94520.github.io/buffer-id/images/single_id.png)
+![](https://babyblue94520.github.io/buffer-id/images/single_buffer.png)
 
 
 純數字
@@ -72,7 +72,7 @@ __缺點__
 
 執行緒各自有 __ID buffer__，效能依賴機器硬體
 
-![](https://babyblue94520.github.io/buffer-id/images/multi_id.png)
+![](https://babyblue94520.github.io/buffer-id/images/multi_buffer.png)
 
 純數字
 
