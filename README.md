@@ -49,11 +49,11 @@ __小技巧__
 ![](https://babyblue94520.github.io/buffer-id/images/single_buffer.png)
 
 
-純數字
+__純數字__
 
 每秒可產生約 1千萬左右 __ID__
 
-前綴
+__前綴__
 
 每秒可產生約 5百萬左右 __ID__
 
@@ -74,13 +74,13 @@ __缺點__
 
 ![](https://babyblue94520.github.io/buffer-id/images/multi_buffer.png)
 
-純數字
+__純數字__
 
 每秒可產生約 1億~2億5 __ID__
 
 ![](https://i.imgur.com/xW7uAKY.png)
 
-前綴
+__前綴__
 
 ![](https://i.imgur.com/4sisz0X.png)
 
