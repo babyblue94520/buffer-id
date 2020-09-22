@@ -20,53 +20,53 @@ public class RedisIdManager implements IdManager {
     }
 
     @Override
-    public long next(String group, String prefix) {
-        return increment(group, prefix, 1);
+    public long next(String id, String prefix) {
+        return increment(id, prefix, 1);
     }
 
     @Override
-    public String next(String group, String prefix, int length) {
-        return IdUtil.addZero(prefix, String.valueOf(increment(group, prefix, 1)), length);
+    public String next(String id, String prefix, int length) {
+        return IdUtil.addZero(prefix, String.valueOf(increment(id, prefix, 1)), length);
     }
 
     @Override
-    public long increment(String group, String prefix, int incr) {
-        Asserts.notNull(group, "group" + Asserts.NotNullMessage);
+    public long increment(String id, String prefix, int incr) {
+        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
         Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
-        return redisTemplate.opsForValue().increment( toKey(group, prefix),incr);
+        return redisTemplate.opsForValue().increment( toKey(id, prefix),incr);
     }
 
 
     @Override
-    public boolean exist(String group, String prefix) {
-        Asserts.notNull(group, "group" + Asserts.NotNullMessage);
+    public boolean exist(String id, String prefix) {
+        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
         Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
 
-        Long incr = redisTemplate.opsForValue().get(toKey(group, prefix));
+        Long incr = redisTemplate.opsForValue().get(toKey(id, prefix));
         return incr == null ? false : true;
     }
 
     @Override
-    public int save(String group, String prefix) {
-        Asserts.notNull(group, "group" + Asserts.NotNullMessage);
+    public int save(String id, String prefix) {
+        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
         Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
-        if (exist(group, prefix)) {
+        if (exist(id, prefix)) {
             return 0;
         }
-        redisTemplate.opsForValue().set(toKey(group, prefix), 0L);
+        redisTemplate.opsForValue().set(toKey(id, prefix), 0L);
         return 1;
     }
 
     @Override
-    public int remove(String group, String prefix) {
-        Asserts.notNull(group, "group" + Asserts.NotNullMessage);
+    public int remove(String id, String prefix) {
+        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
         Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
-        redisTemplate.expire(toKey(group, prefix), 0, TimeUnit.MILLISECONDS);
+        redisTemplate.expire(toKey(id, prefix), 0, TimeUnit.MILLISECONDS);
         return 1;
     }
 
-    private static String toKey(String group, String prefix) {
-        return key + group + ":" + prefix;
+    private static String toKey(String id, String prefix) {
+        return key + id + ":" + prefix;
     }
 }
 

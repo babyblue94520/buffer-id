@@ -6,7 +6,7 @@ plugins {
 
 group = 'pers.clare'
 version = ''
-sourceCompatibility = '1.8'
+sourceCompatibility = '11'
 
 configurations {
     developmentOnly

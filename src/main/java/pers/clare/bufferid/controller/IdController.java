@@ -32,28 +32,28 @@ public class IdController {
     @ApiOperation("純數字")
     @GetMapping("number")
     public Long number(
-            @ApiParam(value = "ID群組", example = "group")
-            @RequestParam(required = false, defaultValue = "group") final String group
+            @ApiParam(value = "ID群組", example = "id")
+            @RequestParam(required = false, defaultValue = "id") final String id
             , @ApiParam(value = "ID前綴", example = "prefix")
             @RequestParam(required = false, defaultValue = "prefix") final String prefix
 
     ) {
-        idManager.save(group, prefix);
-        return idManager.next(group, prefix);
+        idManager.save(id, prefix);
+        return idManager.next(id, prefix);
     }
 
     @ApiOperation("前綴格式")
     @GetMapping("string")
     public String string(
-            @ApiParam(value = "ID群組", example = "group")
-            @RequestParam(required = false, defaultValue = "group") final String group
+            @ApiParam(value = "ID群組", example = "id")
+            @RequestParam(required = false, defaultValue = "id") final String id
             , @ApiParam(value = "ID前綴", example = "prefix")
             @RequestParam(required = false, defaultValue = "prefix") final String prefix
             , @ApiParam(value = "ID長度", example = "20")
             @RequestParam(required = false, defaultValue = "20") final int length
     ) {
-        idManager.save(group, prefix);
-        return idManager.next(group, prefix, length);
+        idManager.save(id, prefix);
+        return idManager.next(id, prefix, length);
     }
 
     @ApiOperation("純數字壓力測試")
@@ -63,13 +63,13 @@ public class IdController {
             @RequestParam(required = false, defaultValue = "8") final int thread
             , @ApiParam(value = "每個執行緒產生ID數量", example = "1000")
             @RequestParam(required = false, defaultValue = "1000") final int count
-            , @ApiParam(value = "ID群組", example = "group")
-            @RequestParam(required = false, defaultValue = "group") final String group
+            , @ApiParam(value = "ID群組", example = "id")
+            @RequestParam(required = false, defaultValue = "id") final String id
             , @ApiParam(value = "ID前綴", example = "prefix")
             @RequestParam(required = false, defaultValue = "prefix") final String prefix
 
     ) throws Exception {
-        return run(thread, count, group, prefix, 0, (g, p, l) -> idManager.next(g, p));
+        return run(thread, count, id, prefix, 0, (g, p, l) -> idManager.next(g, p));
     }
 
     @ApiOperation("前綴格式壓力測試")
@@ -79,33 +79,33 @@ public class IdController {
             @RequestParam(required = false, defaultValue = "8") final int thread
             , @ApiParam(value = "每個執行緒產生ID數量", example = "1000")
             @RequestParam(required = false, defaultValue = "1000") final int count
-            , @ApiParam(value = "ID群組", example = "group")
-            @RequestParam(required = false, defaultValue = "group") final String group
+            , @ApiParam(value = "ID群組", example = "id")
+            @RequestParam(required = false, defaultValue = "id") final String id
             , @ApiParam(value = "ID前綴", example = "prefix")
             @RequestParam(required = false, defaultValue = "prefix") final String prefix
             , @ApiParam(value = "ID長度", example = "20")
             @RequestParam(required = false, defaultValue = "20") final int length
 
     ) throws Exception {
-        return run(thread, count, group, prefix, length, (g, p, l) -> idManager.next(g, p, l));
+        return run(thread, count, id, prefix, length, (g, p, l) -> idManager.next(g, p, l));
     }
 
     public String run(
             Integer thread
             , Integer count
-            , String group
+            , String id
             , String prefix
             , Integer length
             , IdFunction fun
     ) throws Exception {
-        idManager.save(group, prefix);
+        idManager.save(id, prefix);
         ExecutorService executors = Executors.newFixedThreadPool(thread);
         long start = System.currentTimeMillis();
         List<Callable<Integer>> tasks = new ArrayList<>();
         for (int t = 0; t < thread; t++) {
             tasks.add(() -> {
                 for (int i = 0; i < count; i++) {
-                    fun.apply(group, prefix, length);
+                    fun.apply(id, prefix, length);
                 }
                 return count;
             });
@@ -118,12 +118,12 @@ public class IdController {
 
         long ms = System.currentTimeMillis() - start;
         executors.shutdown();
-        return "\nID格式:" + fun.apply(group, prefix, length) + "\nID總數量；" + formatter.format(total) + "\n花費總時間：" + ms + " ms\n平均：" + formatter.format(total * 1000L / ms) + "/s";
+        return "\nID格式:" + fun.apply(id, prefix, length) + "\nID總數量；" + formatter.format(total) + "\n花費總時間：" + ms + " ms\n平均：" + formatter.format(total * 1000L / ms) + "/s";
     }
 }
 
 
 @FunctionalInterface
 interface IdFunction<V> {
-    V apply(String group, String prefix, Integer length);
+    V apply(String id, String prefix, Integer length);
 }

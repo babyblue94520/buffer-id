@@ -22,40 +22,40 @@ public class MultiBufferIdService extends AbstractBufferIdService{
     /**
      * 查詢或者建立 極速ID緩衝紀錄物件
      *
-     * @param group  群組
+     * @param id  群組
      * @param prefix 前綴
      * @return 極速ID緩衝紀錄物件
      */
-    public Long next(int buffer, String group, String prefix) {
+    public Long next(int buffer, String id, String prefix) {
         Map<String, Map<String, BufferId>> fastMap = cache.get();
         if (fastMap == null) {
             cache.set((fastMap = new HashMap<>()));
         }
         Map<String, BufferId> map;
-        if ((map = fastMap.get(group)) == null) {
-            fastMap.put(group, map = new HashMap<>());
+        if ((map = fastMap.get(id)) == null) {
+            fastMap.put(id, map = new HashMap<>());
         }
         BufferId bi;
         if ((bi = map.get(prefix)) == null) {
             map.put(prefix, bi = new BufferId());
         }
-        return bi.count < bi.max ? ++bi.count : next(buffer, group, prefix, bi);
+        return bi.count < bi.max ? ++bi.count : next(buffer, id, prefix, bi);
     }
 
     /**
      * 移除極速ID緩衝紀錄物件
      *
-     * @param group  群組
+     * @param id  群組
      * @param prefix 前綴
      * @return 極速ID緩衝紀錄物件
      */
-    BufferId removeBufferId(String group, String prefix) {
+    public BufferId removeBufferId(String id, String prefix) {
         Map<String, Map<String, BufferId>> fastMap = cache.get();
         if (fastMap == null) {
             return null;
         }
         Map<String, BufferId> map;
-        if ((map = fastMap.get(group)) == null) {
+        if ((map = fastMap.get(id)) == null) {
             return null;
         }
         return map.remove(prefix);

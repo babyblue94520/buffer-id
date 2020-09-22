@@ -14,9 +14,9 @@ import java.util.concurrent.ConcurrentMap;
 public class SingleBufferIdService extends AbstractBufferIdService {
     public static final ConcurrentMap<String, ConcurrentMap<String, BufferId>> cache = new ConcurrentHashMap<>();
 
-    private static final IdLock<Object> groupLock = new IdLock<Object>() {
+    private static final IdLock<Object> idLock = new IdLock<>() {
     };
-    private static final IdLock<Object> prefixLock = new IdLock<Object>() {
+    private static final IdLock<Object> prefixLock = new IdLock<>() {
     };
 
     public SingleBufferIdService(IdManager idManager) {
@@ -28,16 +28,16 @@ public class SingleBufferIdService extends AbstractBufferIdService {
      * 取得數字ID
      *
      * @param buffer 預設緩衝區大小
-     * @param group  群組
+     * @param id     群組
      * @param prefix 前綴
      * @return long
      */
-    public Long next(int buffer, String group, String prefix) {
+    public Long next(int buffer, String id, String prefix) {
         ConcurrentMap<String, BufferId> map;
-        if ((map = cache.get(group)) == null) {
-            synchronized (groupLock.getLock(group)) {
-                if ((map = cache.get(group)) == null) {
-                    cache.put(group, map = new ConcurrentHashMap<>());
+        if ((map = cache.get(id)) == null) {
+            synchronized (idLock.getLock(id)) {
+                if ((map = cache.get(id)) == null) {
+                    cache.put(id, map = new ConcurrentHashMap<>());
                 }
             }
         }
@@ -46,20 +46,20 @@ public class SingleBufferIdService extends AbstractBufferIdService {
             if ((bi = map.get(prefix)) == null) {
                 map.put(prefix, bi = new BufferId());
             }
-            return bi.count < bi.max ? ++bi.count : next(buffer, group, prefix, bi);
+            return bi.count < bi.max ? ++bi.count : next(buffer, id, prefix, bi);
         }
     }
 
     /**
      * 移除極速ID緩衝紀錄物件
      *
-     * @param group  群組
+     * @param id     群組
      * @param prefix 前綴
      * @return 極速ID緩衝紀錄物件
      */
-    BufferId removeBufferId(String group, String prefix) {
+    public BufferId removeBufferId(String id, String prefix) {
         ConcurrentMap<String, BufferId> map;
-        if ((map = cache.get(group)) == null) {
+        if ((map = cache.get(id)) == null) {
             return null;
         }
         return map.remove(prefix);

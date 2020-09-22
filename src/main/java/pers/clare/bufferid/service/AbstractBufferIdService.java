@@ -17,44 +17,44 @@ public abstract class AbstractBufferIdService implements BufferIdService {
      * 取得字串ID 前綴+'00000001'
      *
      * @param buffer 預設緩衝區大小
-     * @param group  群組
+     * @param id  群組
      * @param prefix 前綴
      * @param length 訂單編號長度
      * @return 前綴+'00000001'
      */
-    public String next(int buffer, String group, String prefix, int length) {
-        return IdUtil.addZero(prefix, String.valueOf(next(buffer, group, prefix)), length);
+    public String next(int buffer, String id, String prefix, int length) {
+        return IdUtil.addZero(prefix, String.valueOf(next(buffer, id, prefix)), length);
     }
 
     /**
-     * @param group
+     * @param id
      * @param prefix
      * @return
      */
-    public int save(String group, String prefix) {
-        return this.idManager.save(group, prefix);
+    public int save(String id, String prefix) {
+        return this.idManager.save(id, prefix);
     }
 
     /**
-     * @param group
+     * @param id
      * @param prefix
      * @return
      */
-    public int remove(String group, String prefix) {
-        removeBufferId(group, prefix);
-        return this.idManager.remove(group, prefix);
+    public int remove(String id, String prefix) {
+        removeBufferId(id, prefix);
+        return this.idManager.remove(id, prefix);
     }
 
     /**
      * 取得下一個ID緩衝區
      *
      * @param buffer 預設緩衝區大小
-     * @param group  群組
+     * @param id  群組
      * @param prefix 前綴
      * @param bi     極速ID緩衝紀錄物件
      * @return long
      */
-    protected Long next(int buffer, String group, String prefix, BufferId bi) {
+    protected Long next(int buffer, String id, String prefix, BufferId bi) {
         long now = System.currentTimeMillis();
         // 動態計算需要的緩衝區大小
         if (bi.lastTime == 0) {
@@ -74,11 +74,11 @@ public abstract class AbstractBufferIdService implements BufferIdService {
 
         bi.lastBuffer = buffer;
         //取得當時最大訂單號
-        bi.max = idManager.increment(group, prefix, buffer);
+        bi.max = idManager.increment(id, prefix, buffer);
         bi.count = bi.max - buffer + 1;
         return bi.count;
     }
 
-    public abstract BufferId removeBufferId(String group, String prefix);
+    public abstract BufferId removeBufferId(String id, String prefix);
 
 }

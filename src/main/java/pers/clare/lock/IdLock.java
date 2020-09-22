@@ -44,6 +44,12 @@ public abstract class IdLock<T> {
         return lock;
     }
 
+    public T remove(Object id) {
+        synchronized (this) {
+            return locks.remove(id);
+        }
+    }
+
     protected T newInstance() {
         try{
             return clazz.getDeclaredConstructor().newInstance();

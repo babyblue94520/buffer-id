@@ -10,40 +10,40 @@ import java.util.Map;
 
 public class LocalIdManager implements IdManager {
     private static final Object lock = new Object();
-    private static final Map<String, Map<String, LocalId>> groups = new HashMap<String, Map<String, LocalId>>();
+    private static final Map<String, Map<String, LocalId>> ids = new HashMap<String, Map<String, LocalId>>();
 
     @Override
-    public long next(String group, String prefix) {
-        return increment(group, prefix, 1);
+    public long next(String id, String prefix) {
+        return increment(id, prefix, 1);
     }
 
     @Override
-    public String next(String group, String prefix, int length) {
-        return IdUtil.addZero(prefix, String.valueOf(increment(group, prefix, 1)), length);
+    public String next(String id, String prefix, int length) {
+        return IdUtil.addZero(prefix, String.valueOf(increment(id, prefix, 1)), length);
     }
 
     @Override
-    public long increment(String group, String prefix, int incr) {
-        Asserts.notNull(group, "group" + Asserts.NotNullMessage);
+    public long increment(String id, String prefix, int incr) {
+        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
         Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
-        Map<String, LocalId> g = groups.get(group);
+        Map<String, LocalId> g = ids.get(id);
         if (g == null) {
-            throw new RuntimeException("group:" + group + " not found");
+            throw new RuntimeException("id:" + id + " not found");
         }
-        LocalId id = g.get(prefix);
-        if (id == null) {
+        LocalId localId = g.get(prefix);
+        if (localId == null) {
             throw new RuntimeException("prefix:" + prefix + " not found");
         }
-        synchronized (id) {
-            return id.count += incr;
+        synchronized (localId) {
+            return localId.count += incr;
         }
     }
 
     @Override
-    public boolean exist(String group, String prefix) {
-        Asserts.notNull(group, "group" + Asserts.NotNullMessage);
+    public boolean exist(String id, String prefix) {
+        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
         Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
-        Map<String, LocalId> g = groups.get(group);
+        Map<String, LocalId> g = ids.get(id);
         if (g == null) {
             return false;
         }
@@ -51,19 +51,19 @@ public class LocalIdManager implements IdManager {
     }
 
     @Override
-    public int save(String group, String prefix) {
-        Asserts.notNull(group, "group" + Asserts.NotNullMessage);
+    public int save(String id, String prefix) {
+        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
         Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
-        if (exist(group, prefix)) {
+        if (exist(id, prefix)) {
             return 0;
         }
         synchronized (lock) {
-            if (exist(group, prefix)) {
+            if (exist(id, prefix)) {
                 return 0;
             }
-            Map<String, LocalId> g = groups.get(group);
+            Map<String, LocalId> g = ids.get(id);
             if (g == null) {
-                groups.put(group, (g = new HashMap<String, LocalId>()));
+                ids.put(id, (g = new HashMap<String, LocalId>()));
                 g.put(prefix, new LocalId());
             } else {
                 if (g.get(prefix) == null) {
@@ -77,17 +77,17 @@ public class LocalIdManager implements IdManager {
     }
 
     @Override
-    public int remove(String group, String prefix) {
-        Asserts.notNull(group, "group" + Asserts.NotNullMessage);
+    public int remove(String id, String prefix) {
+        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
         Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
-        if (!exist(group, prefix)) {
+        if (!exist(id, prefix)) {
             return 0;
         }
         synchronized (lock) {
-            if (!exist(group, prefix)) {
+            if (!exist(id, prefix)) {
                 return 0;
             }
-            Map<String, LocalId> g = groups.get(group);
+            Map<String, LocalId> g = ids.get(id);
             if (g == null) {
                 return 0;
             }

@@ -1,10 +1,12 @@
-CREATE DATABASE IF NOT EXISTS `buffer_id` CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE IF NOT EXISTS `buffer_id` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 -- ----------------------------
 -- Table structure for serial
 -- ----------------------------
-CREATE TABLE IF NOT EXISTS `serial` (
-  `group` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '群組',
-  `prefix` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '前綴',
-  `number` bigint(20) unsigned DEFAULT '0' COMMENT '流水號',
-  PRIMARY KEY (`id`,`prefix`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+CREATE TABLE `serial` (
+  `id` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '群組',
+  `prefix` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '前綴',
+  `number` bigint(20) unsigned NOT NULL DEFAULT '0' COMMENT '流水號',
+  PRIMARY KEY (`id`,`prefix`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='serial';
+
+
