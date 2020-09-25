@@ -22,7 +22,7 @@ public abstract class AbstractBufferIdService implements BufferIdService {
      * @param length 訂單編號長度
      * @return 前綴+'00000001'
      */
-    public String next(int buffer, String id, String prefix, int length) {
+    public String next(long buffer, String id, String prefix, int length) {
         return IdUtil.addZero(prefix, String.valueOf(next(buffer, id, prefix)), length);
     }
 
@@ -32,7 +32,7 @@ public abstract class AbstractBufferIdService implements BufferIdService {
      * @return
      */
     public int save(String id, String prefix) {
-        return this.idManager.save(id, prefix);
+        return idManager.save(id, prefix);
     }
 
     /**
@@ -42,7 +42,7 @@ public abstract class AbstractBufferIdService implements BufferIdService {
      */
     public int remove(String id, String prefix) {
         removeBufferId(id, prefix);
-        return this.idManager.remove(id, prefix);
+        return idManager.remove(id, prefix);
     }
 
     /**
@@ -54,17 +54,17 @@ public abstract class AbstractBufferIdService implements BufferIdService {
      * @param bi     極速ID緩衝紀錄物件
      * @return long
      */
-    protected Long next(int buffer, String id, String prefix, BufferId bi) {
+    protected Long next(long buffer, String id, String prefix, BufferId bi) {
         long now = System.currentTimeMillis();
         // 動態計算需要的緩衝區大小
         if (bi.lastTime == 0) {
             bi.lastTime = now;
         } else {
-            int originBuffer = buffer;
+            long originBuffer = buffer;
             // 暫時不考慮溢位
             long t = now - bi.lastTime;
             if (t > 0) {
-                buffer = (int) ((double) bi.lastBuffer / t * bufferMillisecond);
+                buffer = (long) ((double) bi.lastBuffer / t * bufferMillisecond);
                 if (buffer < originBuffer) {
                     buffer = originBuffer;
                 }

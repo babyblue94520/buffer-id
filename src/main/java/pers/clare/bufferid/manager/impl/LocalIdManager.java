@@ -1,15 +1,14 @@
 package pers.clare.bufferid.manager.impl;
 
 
-import pers.clare.bufferid.manager.IdManager;
+import pers.clare.bufferid.manager.AbstractIdManager;
 import pers.clare.bufferid.util.IdUtil;
 import pers.clare.util.Asserts;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class LocalIdManager implements IdManager {
-    private static final Object lock = new Object();
+public class LocalIdManager extends AbstractIdManager {
     private static final Map<String, Map<String, LocalId>> ids = new HashMap<String, Map<String, LocalId>>();
 
     @Override
@@ -23,9 +22,9 @@ public class LocalIdManager implements IdManager {
     }
 
     @Override
-    public long increment(String id, String prefix, int incr) {
-        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
-        Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
+    protected long doIncrement(String id, String prefix, long incr) {
+        Asserts.notNull(id, "id");
+        Asserts.notNull(prefix, "prefix");
         Map<String, LocalId> g = ids.get(id);
         if (g == null) {
             throw new RuntimeException("id:" + id + " not found");
@@ -41,8 +40,8 @@ public class LocalIdManager implements IdManager {
 
     @Override
     public boolean exist(String id, String prefix) {
-        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
-        Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
+        Asserts.notNull(id, "id");
+        Asserts.notNull(prefix, "prefix");
         Map<String, LocalId> g = ids.get(id);
         if (g == null) {
             return false;
@@ -52,18 +51,18 @@ public class LocalIdManager implements IdManager {
 
     @Override
     public int save(String id, String prefix) {
-        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
-        Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
+        Asserts.notNull(id, "id");
+        Asserts.notNull(prefix, "prefix");
         if (exist(id, prefix)) {
             return 0;
         }
-        synchronized (lock) {
+        synchronized (this) {
             if (exist(id, prefix)) {
                 return 0;
             }
             Map<String, LocalId> g = ids.get(id);
             if (g == null) {
-                ids.put(id, (g = new HashMap<String, LocalId>()));
+                ids.put(id, (g = new HashMap<>()));
                 g.put(prefix, new LocalId());
             } else {
                 if (g.get(prefix) == null) {
@@ -78,12 +77,12 @@ public class LocalIdManager implements IdManager {
 
     @Override
     public int remove(String id, String prefix) {
-        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
-        Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
+        Asserts.notNull(id, "id");
+        Asserts.notNull(prefix, "prefix");
         if (!exist(id, prefix)) {
             return 0;
         }
-        synchronized (lock) {
+        synchronized (this) {
             if (!exist(id, prefix)) {
                 return 0;
             }

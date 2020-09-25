@@ -32,7 +32,7 @@ public class BufferIdMultiController {
     @ApiOperation("純數字")
     @GetMapping("number")
     public Long number(@ApiParam(value = "預設序號緩衝大小", example = "100")
-                       @RequestParam(required = false, defaultValue = "100") final int buffer
+                       @RequestParam(required = false, defaultValue = "100") final Long buffer
             , @ApiParam(value = "ID群組", example = "id")
                        @RequestParam(required = false, defaultValue = "id") final String id
             , @ApiParam(value = "ID前綴", example = "prefix")
@@ -68,7 +68,7 @@ public class BufferIdMultiController {
             , @ApiParam(value = "每個執行緒產生ID數量", example = "1000000")
             @RequestParam(required = false, defaultValue = "1000000") final int count
             , @ApiParam(value = "預設序號緩衝大小", example = "100")
-            @RequestParam(required = false, defaultValue = "100") final int buffer
+            @RequestParam(required = false, defaultValue = "100") final Long buffer
             , @ApiParam(value = "ID群組", example = "id")
             @RequestParam(required = false, defaultValue = "id") final String id
             , @ApiParam(value = "ID前綴", example = "prefix")
@@ -86,7 +86,7 @@ public class BufferIdMultiController {
             , @ApiParam(value = "每個執行緒產生ID數量", example = "1000000")
             @RequestParam(required = false, defaultValue = "1000000") final int count
             , @ApiParam(value = "預設序號緩衝大小", example = "100")
-            @RequestParam(required = false, defaultValue = "100") final int buffer
+            @RequestParam(required = false, defaultValue = "100") final Long buffer
             , @ApiParam(value = "ID群組", example = "id")
             @RequestParam(required = false, defaultValue = "id") final String id
             , @ApiParam(value = "ID前綴", example = "prefix")
@@ -101,7 +101,7 @@ public class BufferIdMultiController {
     public String run(
             Integer thread
             , Integer count
-            , Integer buffer
+            , Long buffer
             , String id
             , String prefix
             , Integer length

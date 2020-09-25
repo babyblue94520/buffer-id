@@ -1,6 +1,7 @@
 package pers.clare.bufferid.manager.impl;
 
-import pers.clare.bufferid.manager.IdManager;
+import pers.clare.bufferid.exception.FormatRuntimeException;
+import pers.clare.bufferid.manager.AbstractIdManager;
 import pers.clare.bufferid.util.IdUtil;
 import pers.clare.util.Asserts;
 
@@ -10,7 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class MySQLIdManager implements IdManager {
+public class MySQLIdManager extends AbstractIdManager {
     private DataSource ds;
 
     public MySQLIdManager(DataSource ds) {
@@ -28,9 +29,9 @@ public class MySQLIdManager implements IdManager {
     }
 
     @Override
-    public long increment(String id, String prefix, int incr) {
-        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
-        Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
+    protected long doIncrement(String id, String prefix, long incr) {
+        Asserts.notNull(id, "id");
+        Asserts.notNull(prefix, "prefix");
         try (
                 Connection conn = this.ds.getConnection()
         ) {
@@ -39,23 +40,24 @@ public class MySQLIdManager implements IdManager {
             ps.setLong(1, incr);
             ps.setString(2, id);
             ps.setString(3, prefix);
-            Asserts.isTrue(ps.executeUpdate() > 0, prefix + " not found");
+            if (ps.executeUpdate() == 0) {
+                throw new FormatRuntimeException("id=%s,prefix=%s not found", id, prefix);
+            }
             ResultSet rs = ps.executeQuery("select @next");
             if (rs.next()) {
                 return rs.getLong(1);
             }
-            throw new RuntimeException("id:" + id + ",prefix:" + prefix + " not found");
+            throw new FormatRuntimeException("id=%s,prefix=%s not found", id, prefix);
         } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("id:" + id + ",prefix:" + prefix + " increment failed");
+            throw new FormatRuntimeException("id=%s,prefix=%s increment failed", id, prefix);
         }
     }
 
 
     @Override
     public boolean exist(String id, String prefix) {
-        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
-        Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
+        Asserts.notNull(id, "id");
+        Asserts.notNull(prefix, "prefix");
 
         try (
                 Connection conn = this.ds.getConnection()
@@ -75,8 +77,8 @@ public class MySQLIdManager implements IdManager {
 
     @Override
     public int save(String id, String prefix) {
-        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
-        Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
+        Asserts.notNull(id, "id");
+        Asserts.notNull(prefix, "prefix");
         if (exist(id, prefix)) {
             return 0;
         }
@@ -96,8 +98,8 @@ public class MySQLIdManager implements IdManager {
 
     @Override
     public int remove(String id, String prefix) {
-        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
-        Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
+        Asserts.notNull(id, "id");
+        Asserts.notNull(prefix, "prefix");
 
         try (
                 Connection conn = this.ds.getConnection()

@@ -32,7 +32,7 @@ public class SingleBufferIdService extends AbstractBufferIdService {
      * @param prefix 前綴
      * @return long
      */
-    public Long next(int buffer, String id, String prefix) {
+    public Long next(long buffer, String id, String prefix) {
         ConcurrentMap<String, BufferId> map;
         if ((map = cache.get(id)) == null) {
             synchronized (idLock.getLock(id)) {
@@ -41,11 +41,15 @@ public class SingleBufferIdService extends AbstractBufferIdService {
                 }
             }
         }
-        synchronized (prefixLock.getLock(prefix)) {
-            BufferId bi;
-            if ((bi = map.get(prefix)) == null) {
-                map.put(prefix, bi = new BufferId());
+        BufferId bi;
+        if ((bi = map.get(prefix)) == null) {
+            synchronized (prefixLock.getLock(prefix)) {
+                if ((bi = map.get(prefix)) == null) {
+                    map.put(prefix, bi = new BufferId());
+                }
             }
+        }
+        synchronized (bi) {
             return bi.count < bi.max ? ++bi.count : next(buffer, id, prefix, bi);
         }
     }

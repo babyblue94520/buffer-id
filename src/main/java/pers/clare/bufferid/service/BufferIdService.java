@@ -15,7 +15,7 @@ public interface BufferIdService {
      * @param length 訂單編號長度
      * @return 前綴+'00000001'
      */
-    public String next(int buffer, String id, String prefix, int length);
+    public String next(long buffer, String id, String prefix, int length);
 
     /**
      * 取得數字ID
@@ -25,7 +25,7 @@ public interface BufferIdService {
      * @param prefix 前綴
      * @return long
      */
-    public Long next(int buffer, String id, String prefix);
+    public Long next(long buffer, String id, String prefix);
 
     public int save(String id, String prefix);
 

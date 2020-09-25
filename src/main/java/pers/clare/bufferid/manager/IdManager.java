@@ -6,7 +6,7 @@ public interface IdManager {
 
     public String next(String id, String prefix, int length);
 
-    public long increment(String id, String prefix, int incr);
+    public long increment(String id, String prefix, long incr);
 
     public boolean exist(String id, String prefix);
 

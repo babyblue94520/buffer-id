@@ -1,19 +1,7 @@
 package pers.clare;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import pers.clare.bufferid.manager.IdManager;
-import pers.clare.bufferid.manager.impl.LocalIdManager;
-import pers.clare.bufferid.manager.impl.MySQLIdManager;
-import pers.clare.bufferid.manager.impl.RedisIdManager;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
-
-import javax.sql.DataSource;
 
 @SpringBootApplication
 public class BufferIdApplication {

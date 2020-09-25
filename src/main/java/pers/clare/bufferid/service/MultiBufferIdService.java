@@ -26,7 +26,7 @@ public class MultiBufferIdService extends AbstractBufferIdService{
      * @param prefix 前綴
      * @return 極速ID緩衝紀錄物件
      */
-    public Long next(int buffer, String id, String prefix) {
+    public Long next(long buffer, String id, String prefix) {
         Map<String, Map<String, BufferId>> fastMap = cache.get();
         if (fastMap == null) {
             cache.set((fastMap = new HashMap<>()));
@@ -66,7 +66,7 @@ class NamedBufferIdThreadLocal<T> extends ThreadLocal<T> {
     private final String name;
 
     NamedBufferIdThreadLocal(String name) {
-        Asserts.notEmpty(name, "Name must not be empty");
+        Asserts.notEmpty(name, "name");
         this.name = name;
     }
 

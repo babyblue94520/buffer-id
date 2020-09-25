@@ -4,19 +4,19 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
-import pers.clare.bufferid.manager.IdManager;
+import pers.clare.bufferid.manager.AbstractIdManager;
 import pers.clare.bufferid.util.IdUtil;
 import pers.clare.util.Asserts;
 
 import java.util.concurrent.TimeUnit;
 
-public class RedisIdManager implements IdManager {
+public class RedisIdManager extends AbstractIdManager {
     public static final String key = "serial:";
     private LongRedisTemplate redisTemplate;
 
 
     public RedisIdManager(RedisConnectionFactory connectionFactory) {
-        this.redisTemplate = new LongRedisTemplate(connectionFactory);
+        redisTemplate = new LongRedisTemplate(connectionFactory);
     }
 
     @Override
@@ -30,17 +30,17 @@ public class RedisIdManager implements IdManager {
     }
 
     @Override
-    public long increment(String id, String prefix, int incr) {
-        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
-        Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
-        return redisTemplate.opsForValue().increment( toKey(id, prefix),incr);
+    protected long doIncrement(String id, String prefix, long incr) {
+        Asserts.notNull(id, "id");
+        Asserts.notNull(prefix, "prefix");
+        return redisTemplate.opsForValue().increment(toKey(id, prefix), incr);
     }
 
 
     @Override
     public boolean exist(String id, String prefix) {
-        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
-        Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
+        Asserts.notNull(id, "id");
+        Asserts.notNull(prefix, "prefix");
 
         Long incr = redisTemplate.opsForValue().get(toKey(id, prefix));
         return incr == null ? false : true;
@@ -48,8 +48,8 @@ public class RedisIdManager implements IdManager {
 
     @Override
     public int save(String id, String prefix) {
-        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
-        Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
+        Asserts.notNull(id, "id");
+        Asserts.notNull(prefix, "prefix");
         if (exist(id, prefix)) {
             return 0;
         }
@@ -59,8 +59,8 @@ public class RedisIdManager implements IdManager {
 
     @Override
     public int remove(String id, String prefix) {
-        Asserts.notNull(id, "id" + Asserts.NotNullMessage);
-        Asserts.notNull(prefix, "prefix" + Asserts.NotNullMessage);
+        Asserts.notNull(id, "id");
+        Asserts.notNull(prefix, "prefix");
         redisTemplate.expire(toKey(id, prefix), 0, TimeUnit.MILLISECONDS);
         return 1;
     }
