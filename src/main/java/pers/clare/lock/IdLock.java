@@ -34,7 +34,7 @@ public abstract class IdLock<T> {
         if (lock != null) {
             return lock;
         }
-        synchronized (this) {
+        synchronized (locks) {
             lock = locks.get(id);
             if (lock != null) {
                 return lock;
@@ -45,7 +45,7 @@ public abstract class IdLock<T> {
     }
 
     public T remove(Object id) {
-        synchronized (this) {
+        synchronized (locks) {
             return locks.remove(id);
         }
     }
