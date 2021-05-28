@@ -3,7 +3,7 @@ package pers.clare.bufferid.manager.impl;
 import pers.clare.bufferid.exception.FormatRuntimeException;
 import pers.clare.bufferid.manager.AbstractIdManager;
 import pers.clare.bufferid.util.IdUtil;
-import pers.clare.util.Asserts;
+import pers.clare.bufferid.util.Asserts;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -12,10 +12,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class MySQLIdManager extends AbstractIdManager {
-    private DataSource ds;
+    private static final String updateIncrement = "update serial set `number`=@next:=`number`+? where id=? and prefix=?";
+    private static final String findNext = "select @next";
+    private static final String findCount = "select count(*) from serial where id=? and prefix=?";
+    private static final String insert = "insert serial(id,prefix,`number`)values(?,?,0)";
+    private static final String delete = "delete from serial where id=? and prefix=?";
 
-    public MySQLIdManager(DataSource ds) {
-        this.ds = ds;
+    private final DataSource dataSource;
+
+    public MySQLIdManager(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -33,22 +39,24 @@ public class MySQLIdManager extends AbstractIdManager {
         Asserts.notNull(id, "id");
         Asserts.notNull(prefix, "prefix");
         try (
-                Connection conn = this.ds.getConnection()
+                Connection conn = this.dataSource.getConnection()
         ) {
-            PreparedStatement ps = conn.prepareStatement(
-                    "update serial set `number`=@next:=`number`+? where id=? and prefix=?");
+            PreparedStatement ps = conn.prepareStatement(updateIncrement);
             ps.setLong(1, incr);
             ps.setString(2, id);
             ps.setString(3, prefix);
-            if (ps.executeUpdate() == 0) {
-                throw new FormatRuntimeException("id=%s,prefix=%s not found", id, prefix);
-            }
-            ResultSet rs = ps.executeQuery("select @next");
+            ps.executeUpdate();
+            ResultSet rs = conn.createStatement().executeQuery(findNext);
             if (rs.next()) {
                 return rs.getLong(1);
             }
+            if (ps.getUpdateCount() == 0) {
+                throw new FormatRuntimeException("id=%s,prefix=%s not found", id, prefix);
+            }
+
             throw new FormatRuntimeException("id=%s,prefix=%s not found", id, prefix);
         } catch (SQLException e) {
+            e.printStackTrace();
             throw new FormatRuntimeException("id=%s,prefix=%s increment failed", id, prefix);
         }
     }
@@ -60,11 +68,12 @@ public class MySQLIdManager extends AbstractIdManager {
         Asserts.notNull(prefix, "prefix");
 
         try (
-                Connection conn = this.ds.getConnection()
+                Connection conn = this.dataSource.getConnection()
         ) {
-            PreparedStatement ps = conn.prepareStatement("select count(*) from serial where id=? and prefix=?");
+            PreparedStatement ps = conn.prepareStatement(findCount);
             ps.setString(1, id);
             ps.setString(2, prefix);
+
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getInt(1) > 0;
@@ -84,9 +93,9 @@ public class MySQLIdManager extends AbstractIdManager {
         }
 
         try (
-                Connection conn = this.ds.getConnection()
+                Connection conn = this.dataSource.getConnection()
         ) {
-            PreparedStatement ps = conn.prepareStatement("insert serial(id,prefix,`number`)values(?,?,0)");
+            PreparedStatement ps = conn.prepareStatement(insert);
             ps.setString(1, id);
             ps.setString(2, prefix);
             return ps.executeUpdate();
@@ -100,11 +109,8 @@ public class MySQLIdManager extends AbstractIdManager {
     public int remove(String id, String prefix) {
         Asserts.notNull(id, "id");
         Asserts.notNull(prefix, "prefix");
-
-        try (
-                Connection conn = this.ds.getConnection()
-        ) {
-            PreparedStatement ps = conn.prepareStatement("delete from serial where id=? and prefix=?");
+        try (Connection conn = this.dataSource.getConnection()) {
+            PreparedStatement ps = conn.prepareStatement(delete);
             ps.setString(1, id);
             ps.setString(2, prefix);
             return ps.executeUpdate();

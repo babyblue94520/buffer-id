@@ -3,7 +3,7 @@ package pers.clare.bufferid.service;
 /**
  * 極速ID緩衝紀錄物件
  */
-class BufferId {
+class BufferId{
     // 上次取編號緩衝區時間
     long lastTime = 0;
     // 上次取得的緩衝區大小

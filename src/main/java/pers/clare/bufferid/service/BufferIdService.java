@@ -5,29 +5,32 @@ package pers.clare.bufferid.service;
  */
 public interface BufferIdService {
 
-
     /**
+     * 根據負載計算緩衝大小
      * 取得字串ID 前綴+'00000001'
      *
-     * @param buffer 預設緩衝區大小
-     * @param id  群組
-     * @param prefix 前綴
-     * @param length 訂單編號長度
+     * @param minBuffer 最小緩衝區大小 不可為 0
+     * @param maxBuffer 最大緩衝區大小 0:則為無限制
+     * @param id        群組
+     * @param prefix    前綴
+     * @param length    訂單編號長度
      * @return 前綴+'00000001'
      */
-    public String next(long buffer, String id, String prefix, int length);
+    String next(long minBuffer, long maxBuffer, String id, String prefix, int length);
 
     /**
-     * 取得數字ID
+     * 根據負載計算緩衝大小
+     * 取得字串ID 前綴+'00000001'
      *
-     * @param buffer 預設緩衝區大小
-     * @param id  群組
-     * @param prefix 前綴
-     * @return long
+     * @param minBuffer 最小緩衝區大小 不可為 0
+     * @param maxBuffer 最大緩衝區大小 0:則為無限制
+     * @param id        群組
+     * @param prefix    前綴
+     * @return 前綴+'00000001'
      */
-    public Long next(long buffer, String id, String prefix);
+    Long next(long minBuffer, long maxBuffer, String id, String prefix);
 
-    public int save(String id, String prefix);
+    int save(String id, String prefix);
 
-    public int remove(String id, String prefix);
+    int remove(String id, String prefix);
 }

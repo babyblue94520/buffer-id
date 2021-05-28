@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>io.github.babyblue94520</groupId>
+    <artifactId>buffer-id</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>buffer-id</name>
+    <description>Fast unique ID generation</description>
+    <packaging>jar</packaging>
+    <url>https://github.com/babyblue94520/buffer-id</url>
+
+    <scm>
+        <connection>https://github.com/babyblue94520/buffer-id.git</connection>
+        <url>https://github.com/babyblue94520/buffer-id.git</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>Clare Wu</name>
+            <id>babyblue94520</id>
+            <email>babyblue94520@gmail.com</email>
+            <timezone>+8</timezone>
+            <roles>
+                <role>Java Developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>Apache 2.0</name>
+            <url>https://github.com/babyblue94520/buffer-id/blob/master/LICENSE</url>
+        </license>
+    </licenses>
+
+    <properties>
+        <java.version>1.8</java.version>
+    </properties>
+
+    <dependencies>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+<!--                    <plugin>-->
+<!--                        <groupId>org.apache.maven.plugins</groupId>-->
+<!--                        <artifactId>maven-gpg-plugin</artifactId>-->
+<!--                        <version>1.6</version>-->
+<!--                        <executions>-->
+<!--                            <execution>-->
+<!--                                <id>sign-artifacts</id>-->
+<!--                                <phase>verify</phase>-->
+<!--                                <goals>-->
+<!--                                    <goal>sign</goal>-->
+<!--                                </goals>-->
+<!--                            </execution>-->
+<!--                        </executions>-->
+<!--                    </plugin>-->
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+</project>

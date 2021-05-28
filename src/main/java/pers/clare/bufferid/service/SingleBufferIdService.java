@@ -1,7 +1,6 @@
 package pers.clare.bufferid.service;
 
 import pers.clare.bufferid.manager.IdManager;
-import pers.clare.lock.IdLock;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -12,46 +11,31 @@ import java.util.concurrent.ConcurrentMap;
  * 極速產生唯一ID
  */
 public class SingleBufferIdService extends AbstractBufferIdService {
-    public static final ConcurrentMap<String, ConcurrentMap<String, BufferId>> cache = new ConcurrentHashMap<>();
-
-    private static final IdLock<Object> idLock = new IdLock<>() {
-    };
-    private static final IdLock<Object> prefixLock = new IdLock<>() {
-    };
+    public static final ConcurrentMap<String, ConcurrentMap<String, AtomicBufferId>> cache = new ConcurrentHashMap<>();
 
     public SingleBufferIdService(IdManager idManager) {
         super(idManager);
     }
 
 
-    /**
-     * 取得數字ID
-     *
-     * @param buffer 預設緩衝區大小
-     * @param id     群組
-     * @param prefix 前綴
-     * @return long
-     */
-    public Long next(long buffer, String id, String prefix) {
-        ConcurrentMap<String, BufferId> map;
-        if ((map = cache.get(id)) == null) {
-            synchronized (idLock.getLock(id)) {
-                if ((map = cache.get(id)) == null) {
-                    cache.put(id, map = new ConcurrentHashMap<>());
-                }
-            }
-        }
-        BufferId bi;
-        if ((bi = map.get(prefix)) == null) {
-            synchronized (prefixLock.getLock(prefix)) {
-                if ((bi = map.get(prefix)) == null) {
-                    map.put(prefix, bi = new BufferId());
-                }
-            }
-        }
+    public Long next(long minBuffer, long maxBuffer, String id, String prefix) {
+        AtomicBufferId bi = cache.computeIfAbsent(id, (key) -> new ConcurrentHashMap<>())
+                .computeIfAbsent(prefix, (key) -> new AtomicBufferId());
+
+        long next = bi.next();
+        if (next > 0) return next;
         synchronized (bi) {
-            return bi.count < bi.max ? ++bi.count : next(buffer, id, prefix, bi);
+            next = bi.next();
+            if (next > 0) return next;
+            return next(minBuffer, maxBuffer, id, prefix, bi);
         }
+    }
+
+    protected Long next(long minBuffer, long maxBuffer, String id, String prefix, AtomicBufferId bi) {
+        long buffer = calculationBuffer(minBuffer, maxBuffer, bi);
+        long max = idManager.increment(id, prefix, buffer);
+        bi.atomic = new AtomicBufferId.Atomic(max, max - buffer);
+        return bi.next();
     }
 
     /**
@@ -59,13 +43,11 @@ public class SingleBufferIdService extends AbstractBufferIdService {
      *
      * @param id     群組
      * @param prefix 前綴
-     * @return 極速ID緩衝紀錄物件
      */
-    public BufferId removeBufferId(String id, String prefix) {
-        ConcurrentMap<String, BufferId> map;
-        if ((map = cache.get(id)) == null) {
-            return null;
-        }
-        return map.remove(prefix);
+    public void removeBufferId(String id, String prefix) {
+        ConcurrentMap<String, AtomicBufferId> map = cache.get(id);
+        if (map == null) return;
+        map.remove(prefix);
     }
+
 }

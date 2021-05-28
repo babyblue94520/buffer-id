@@ -5,80 +5,59 @@ import pers.clare.bufferid.util.IdUtil;
 
 public abstract class AbstractBufferIdService implements BufferIdService {
     // 预设計算緩衝區大小的時間
-    private static final long bufferMillisecond = 10000L;
+    protected static final long bufferMillisecond = 10000L;
 
-    private IdManager idManager;
+    protected final IdManager idManager;
 
     public AbstractBufferIdService(IdManager idManager) {
         this.idManager = idManager;
     }
 
-    /**
-     * 取得字串ID 前綴+'00000001'
-     *
-     * @param buffer 預設緩衝區大小
-     * @param id  群組
-     * @param prefix 前綴
-     * @param length 訂單編號長度
-     * @return 前綴+'00000001'
-     */
-    public String next(long buffer, String id, String prefix, int length) {
-        return IdUtil.addZero(prefix, String.valueOf(next(buffer, id, prefix)), length);
+    public String next(long minBuffer, long maxBuffer, String id, String prefix, int length) {
+        return IdUtil.addZero(prefix, String.valueOf(next(minBuffer, maxBuffer, id, prefix)), length);
     }
 
-    /**
-     * @param id
-     * @param prefix
-     * @return
-     */
     public int save(String id, String prefix) {
         return idManager.save(id, prefix);
     }
 
-    /**
-     * @param id
-     * @param prefix
-     * @return
-     */
     public int remove(String id, String prefix) {
         removeBufferId(id, prefix);
         return idManager.remove(id, prefix);
     }
 
-    /**
-     * 取得下一個ID緩衝區
-     *
-     * @param buffer 預設緩衝區大小
-     * @param id  群組
-     * @param prefix 前綴
-     * @param bi     極速ID緩衝紀錄物件
-     * @return long
-     */
-    protected Long next(long buffer, String id, String prefix, BufferId bi) {
-        long now = System.currentTimeMillis();
-        // 動態計算需要的緩衝區大小
-        if (bi.lastTime == 0) {
-            bi.lastTime = now;
-        } else {
-            long originBuffer = buffer;
-            // 暫時不考慮溢位
-            long t = now - bi.lastTime;
-            if (t > 0) {
-                buffer = (long) ((double) bi.lastBuffer / t * bufferMillisecond);
-                if (buffer < originBuffer) {
-                    buffer = originBuffer;
-                }
-            }
-            bi.lastTime = now;
-        }
-
-        bi.lastBuffer = buffer;
-        //取得當時最大訂單號
+    protected Long next(long minBuffer, long maxBuffer, String id, String prefix, BufferId bi) {
+        long buffer = calculationBuffer(minBuffer, maxBuffer, bi);
         bi.max = idManager.increment(id, prefix, buffer);
         bi.count = bi.max - buffer + 1;
         return bi.count;
     }
 
-    public abstract BufferId removeBufferId(String id, String prefix);
+    /**
+     * 動態計算需要的緩衝區大小
+     */
+    protected long calculationBuffer(long min, long max, BufferId bi) {
+        long now = System.currentTimeMillis();
+        long newBuffer = min;
+        if (bi.lastTime == 0) {
+            bi.lastTime = now;
+        } else {
+            // 暫時不考慮溢位
+            long t = now - bi.lastTime;
+            if (t > 0) {
+                newBuffer = (long) ((double) bi.lastBuffer / t * bufferMillisecond);
+                if (newBuffer < min) {
+                    newBuffer = min;
+                } else if (max > 0 && newBuffer > max) {
+                    newBuffer = max;
+                }
+            }
+            bi.lastTime = now;
+        }
+
+        return bi.lastBuffer = newBuffer;
+    }
+
+    public abstract void removeBufferId(String id, String prefix);
 
 }

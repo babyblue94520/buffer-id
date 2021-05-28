@@ -1,15 +1,17 @@
 package pers.clare.bufferid.manager.impl;
 
 
+import pers.clare.bufferid.exception.FormatRuntimeException;
 import pers.clare.bufferid.manager.AbstractIdManager;
 import pers.clare.bufferid.util.IdUtil;
-import pers.clare.util.Asserts;
+import pers.clare.bufferid.util.Asserts;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class LocalIdManager extends AbstractIdManager {
-    private static final Map<String, Map<String, LocalId>> ids = new HashMap<String, Map<String, LocalId>>();
+    private static final ConcurrentMap<String, ConcurrentMap<String, LocalId>> ids = new ConcurrentHashMap<>();
 
     @Override
     public long next(String id, String prefix) {
@@ -25,77 +27,42 @@ public class LocalIdManager extends AbstractIdManager {
     protected long doIncrement(String id, String prefix, long incr) {
         Asserts.notNull(id, "id");
         Asserts.notNull(prefix, "prefix");
-        Map<String, LocalId> g = ids.get(id);
-        if (g == null) {
-            throw new RuntimeException("id:" + id + " not found");
-        }
+        ConcurrentMap<String, LocalId> g = ids.get(id);
+        if (g == null) throw new FormatRuntimeException("id:%s not found", id);
         LocalId localId = g.get(prefix);
-        if (localId == null) {
-            throw new RuntimeException("prefix:" + prefix + " not found");
-        }
-        synchronized (localId) {
-            return localId.count += incr;
-        }
+        if (localId == null) throw new FormatRuntimeException("prefix:%s not found", id);
+        return localId.count.getAndAdd(incr);
     }
 
     @Override
     public boolean exist(String id, String prefix) {
         Asserts.notNull(id, "id");
         Asserts.notNull(prefix, "prefix");
-        Map<String, LocalId> g = ids.get(id);
-        if (g == null) {
-            return false;
-        }
-        return g.get(prefix) == null ? false : true;
+        ConcurrentMap<String, LocalId> g = ids.get(id);
+        if (g == null) return false;
+        return g.get(prefix) != null;
     }
 
     @Override
     public int save(String id, String prefix) {
         Asserts.notNull(id, "id");
         Asserts.notNull(prefix, "prefix");
-        if (exist(id, prefix)) {
-            return 0;
-        }
-        synchronized (this) {
-            if (exist(id, prefix)) {
-                return 0;
-            }
-            Map<String, LocalId> g = ids.get(id);
-            if (g == null) {
-                ids.put(id, (g = new HashMap<>()));
-                g.put(prefix, new LocalId());
-            } else {
-                if (g.get(prefix) == null) {
-                    g.put(prefix, new LocalId());
-                }else{
-                    return 0;
-                }
-            }
-        }
-        return 1;
+        LocalId instance = new LocalId();
+        return instance.equals(ids.computeIfAbsent(id, (key) -> new ConcurrentHashMap<>())
+                .computeIfAbsent(prefix, (key) -> instance)) ? 1 : 0;
     }
 
     @Override
     public int remove(String id, String prefix) {
         Asserts.notNull(id, "id");
         Asserts.notNull(prefix, "prefix");
-        if (!exist(id, prefix)) {
-            return 0;
-        }
-        synchronized (this) {
-            if (!exist(id, prefix)) {
-                return 0;
-            }
-            Map<String, LocalId> g = ids.get(id);
-            if (g == null) {
-                return 0;
-            }
-            g.remove(g);
-        }
+        ConcurrentMap<String, LocalId> g = ids.get(id);
+        if (g == null) return 0;
+        g.remove(prefix);
         return 1;
     }
 }
 
 class LocalId {
-    long count = 0;
+    AtomicLong count = new AtomicLong();
 }
