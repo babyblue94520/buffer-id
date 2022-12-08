@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentMap;
  * 極速產生唯一ID
  */
 public class SingleBufferIdService extends AbstractBufferIdService {
-    public static final ConcurrentMap<String, ConcurrentMap<String, AtomicBufferId>> cache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConcurrentMap<String, AtomicBufferId>> cache = new ConcurrentHashMap<>();
 
     public SingleBufferIdService(IdManager idManager) {
         super(idManager);

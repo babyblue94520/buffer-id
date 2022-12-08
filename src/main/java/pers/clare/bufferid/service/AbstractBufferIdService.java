@@ -13,6 +13,29 @@ public abstract class AbstractBufferIdService implements BufferIdService {
         this.idManager = idManager;
     }
 
+    public Long next(String id, String prefix) {
+        return idManager.increment(id, prefix, 1);
+    }
+
+    public String next(String id, String prefix, int length) {
+        return IdUtil.addZero(prefix, String.valueOf(next(id, prefix)), length);
+    }
+
+    /**
+     * @return A~Z
+     */
+    public String nextAZ(String id, String prefix) {
+        long next = next(id, prefix);
+        StringBuilder sb = new StringBuilder();
+        sb.append(toAZ(--next));
+        while ((next /= 26) > 0) sb.insert(0, toAZ(--next));
+        return sb.toString();
+    }
+
+    public char toAZ(long n) {
+        return (char) (n % 26 + 65);
+    }
+
     public String next(long minBuffer, long maxBuffer, String id, String prefix, int length) {
         return IdUtil.addZero(prefix, String.valueOf(next(minBuffer, maxBuffer, id, prefix)), length);
     }
@@ -26,22 +49,13 @@ public abstract class AbstractBufferIdService implements BufferIdService {
         return idManager.remove(id, prefix);
     }
 
-    protected Long next(long minBuffer, long maxBuffer, String id, String prefix, BufferId bi) {
-        long buffer = calculationBuffer(minBuffer, maxBuffer, bi);
-        bi.max = idManager.increment(id, prefix, buffer);
-        bi.count = bi.max - buffer + 1;
-        return bi.count;
-    }
-
     /**
      * 動態計算需要的緩衝區大小
      */
     protected long calculationBuffer(long min, long max, BufferId bi) {
         long now = System.currentTimeMillis();
         long newBuffer = min;
-        if (bi.lastTime == 0) {
-            bi.lastTime = now;
-        } else {
+        if (bi.lastTime != 0) {
             // 暫時不考慮溢位
             long t = now - bi.lastTime;
             if (t > 0) {
@@ -52,12 +66,11 @@ public abstract class AbstractBufferIdService implements BufferIdService {
                     newBuffer = max;
                 }
             }
-            bi.lastTime = now;
         }
+        bi.lastTime = now;
 
         return bi.lastBuffer = newBuffer;
     }
 
     public abstract void removeBufferId(String id, String prefix);
-
 }

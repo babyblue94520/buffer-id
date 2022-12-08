@@ -1,9 +1,8 @@
 package pers.clare.bufferid.manager.impl;
 
 
-import pers.clare.bufferid.exception.FormatRuntimeException;
+import pers.clare.bufferid.exception.BufferIdIllegalArgumentException;
 import pers.clare.bufferid.manager.AbstractIdManager;
-import pers.clare.bufferid.util.IdUtil;
 import pers.clare.bufferid.util.Asserts;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,19 +18,14 @@ public class LocalIdManager extends AbstractIdManager {
     }
 
     @Override
-    public String next(String id, String prefix, int length) {
-        return IdUtil.addZero(prefix, String.valueOf(increment(id, prefix, 1)), length);
-    }
-
-    @Override
     protected long doIncrement(String id, String prefix, long incr) {
         Asserts.notNull(id, "id");
         Asserts.notNull(prefix, "prefix");
         ConcurrentMap<String, LocalId> g = ids.get(id);
-        if (g == null) throw new FormatRuntimeException("id:%s not found", id);
+        if (g == null) throw new BufferIdIllegalArgumentException("id:%s not found", id);
         LocalId localId = g.get(prefix);
-        if (localId == null) throw new FormatRuntimeException("prefix:%s not found", id);
-        return localId.count.getAndAdd(incr);
+        if (localId == null) throw new BufferIdIllegalArgumentException("prefix:%s not found", id);
+        return localId.count.addAndGet(incr);
     }
 
     @Override

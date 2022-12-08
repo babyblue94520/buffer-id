@@ -1,8 +1,9 @@
 package pers.clare.bufferid.manager.impl;
 
-import pers.clare.bufferid.exception.FormatRuntimeException;
+import pers.clare.bufferid.exception.BufferIdIllegalArgumentException;
+import pers.clare.bufferid.exception.BufferIdSQLException;
 import pers.clare.bufferid.manager.AbstractIdManager;
-import pers.clare.bufferid.util.IdUtil;
+import pers.clare.bufferid.util.DataSourceSchemaUtil;
 import pers.clare.bufferid.util.Asserts;
 
 import javax.sql.DataSource;
@@ -15,7 +16,7 @@ public class MySQLIdManager extends AbstractIdManager {
     private static final String updateIncrement = "update serial set `number`=@next:=`number`+? where id=? and prefix=?";
     private static final String findNext = "select @next";
     private static final String findCount = "select count(*) from serial where id=? and prefix=?";
-    private static final String insert = "insert serial(id,prefix,`number`)values(?,?,0)";
+    private static final String insert = "insert into serial values(?,?,0)";
     private static final String delete = "delete from serial where id=? and prefix=?";
 
     private final DataSource dataSource;
@@ -24,23 +25,24 @@ public class MySQLIdManager extends AbstractIdManager {
         this.dataSource = dataSource;
     }
 
+    public void initSchema() {
+        try {
+            DataSourceSchemaUtil.init(dataSource);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public long next(String id, String prefix) {
         return increment(id, prefix, 1);
     }
 
     @Override
-    public String next(String id, String prefix, int length) {
-        return IdUtil.addZero(prefix, String.valueOf(increment(id, prefix, 1)), length);
-    }
-
-    @Override
     protected long doIncrement(String id, String prefix, long incr) {
         Asserts.notNull(id, "id");
         Asserts.notNull(prefix, "prefix");
-        try (
-                Connection conn = this.dataSource.getConnection()
-        ) {
+        try (Connection conn = this.dataSource.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(updateIncrement);
             ps.setLong(1, incr);
             ps.setString(2, id);
@@ -51,13 +53,13 @@ public class MySQLIdManager extends AbstractIdManager {
                 return rs.getLong(1);
             }
             if (ps.getUpdateCount() == 0) {
-                throw new FormatRuntimeException("id=%s,prefix=%s not found", id, prefix);
+                throw new BufferIdIllegalArgumentException("id=%s, prefix=%s not found", id, prefix);
             }
 
-            throw new FormatRuntimeException("id=%s,prefix=%s not found", id, prefix);
+            throw new BufferIdIllegalArgumentException("id=%s, prefix=%s not found", id, prefix);
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new FormatRuntimeException("id=%s,prefix=%s increment failed", id, prefix);
+            throw new BufferIdSQLException(e, "id=%s, prefix=%s increment failed", id, prefix);
         }
     }
 
@@ -67,9 +69,7 @@ public class MySQLIdManager extends AbstractIdManager {
         Asserts.notNull(id, "id");
         Asserts.notNull(prefix, "prefix");
 
-        try (
-                Connection conn = this.dataSource.getConnection()
-        ) {
+        try (Connection conn = this.dataSource.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(findCount);
             ps.setString(1, id);
             ps.setString(2, prefix);
@@ -80,6 +80,7 @@ public class MySQLIdManager extends AbstractIdManager {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new BufferIdSQLException(e, "id=%s, prefix=%s increment failed", id, prefix);
         }
         return false;
     }
@@ -92,17 +93,15 @@ public class MySQLIdManager extends AbstractIdManager {
             return 0;
         }
 
-        try (
-                Connection conn = this.dataSource.getConnection()
-        ) {
+        try (Connection conn = this.dataSource.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(insert);
             ps.setString(1, id);
             ps.setString(2, prefix);
             return ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new BufferIdSQLException(e, "id=%s, prefix=%s save failed", id, prefix);
         }
-        return 0;
     }
 
     @Override
@@ -116,8 +115,8 @@ public class MySQLIdManager extends AbstractIdManager {
             return ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new BufferIdSQLException(e, "id=%s, prefix=%s remove failed", id, prefix);
         }
-        return 0;
     }
 }
 

@@ -1,6 +1,11 @@
 package pers.clare.bufferid.util;
 
-public abstract class IdUtil {
+public class IdUtil {
+
+    private IdUtil(){
+
+    }
+
     public static String addZero(String prefix, String number, int length) {
         char[] result = new char[length];
         int l = length - number.length();

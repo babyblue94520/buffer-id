@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    initialization-mode: ALWAYS
+  h2:
+    console:
+      enabled: true
+      path: /h2
+      settings:
+        web-allow-others: true
+        web-admin-password: 123456
